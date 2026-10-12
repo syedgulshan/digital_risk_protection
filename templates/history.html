@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Audit Log — BrandShield AI{% endblock %}
+{% block page_title %}Security Scan Intelligence Log{% endblock %}
+{% block page_subtitle %}Searchable audit records, deterministic risk scoring timeline, and exportable compliance reports{% endblock %}
+
+{% block content %}
+<div class="cyber-card mb-4">
+  <div class="cyber-card-body p-3">
+    <!-- Filter and Search Form -->
+    <form action="{{ url_for('history') }}" method="GET" class="row g-2 align-items-center">
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" name="q" placeholder="Search target handle, URL, app, or keyword..." value="{{ search_query }}">
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <select class="form-select" name="type" onchange="this.form.submit()">
+          <option value="all" {% if current_type == 'all' %}selected{% endif %}>All Surfaces (Social, Link, App)</option>
+          <option value="social" {% if current_type == 'social' %}selected{% endif %}>Social Media Profiles</option>
+          <option value="link" {% if current_type == 'link' %}selected{% endif %}>Suspicious Web Links</option>
+          <option value="app" {% if current_type == 'app' %}selected{% endif %}>Mobile App Listings</option>
+        </select>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <select class="form-select" name="risk" onchange="this.form.submit()">
+          <option value="all" {% if current_risk == 'all' %}selected{% endif %}>All Risk Categories</option>
+          <option value="HIGH RISK" {% if current_risk in ('HIGH RISK', 'High') %}selected{% endif %}>HIGH RISK</option>
+          <option value="SUSPICIOUS" {% if current_risk in ('SUSPICIOUS', 'Medium') %}selected{% endif %}>SUSPICIOUS</option>
+          <option value="LOW RISK" {% if current_risk in ('LOW RISK', 'Low') %}selected{% endif %}>LOW RISK</option>
+          <option value="UNKNOWN / INSUFFICIENT DATA" {% if current_risk in ('UNKNOWN / INSUFFICIENT DATA', 'Unknown') %}selected{% endif %}>UNKNOWN / INSUFFICIENT DATA</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-cyber-primary w-100">
+          Filter
+        </button>
+        {% if search_query or current_type != 'all' or current_risk != 'all' %}
+          <a href="{{ url_for('history') }}" class="btn btn-cyber-secondary" title="Reset Filters">
+            <i class="bi bi-x-lg"></i>
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Results Header & Export Buttons -->
+<div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-3">
+  <div class="text-secondary small">
+    Showing <strong class="text-light">{{ scans|length }}</strong> recorded scans in SQLite repository
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a href="{{ url_for('export_history_csv') }}" class="btn btn-sm btn-cyber-secondary" title="Export as CSV">
+      <i class="bi bi-file-earmark-spreadsheet text-success me-1"></i> Export CSV
+    </a>
+    <a href="{{ url_for('export_history_json') }}" class="btn btn-sm btn-cyber-secondary" title="Export as JSON">
+      <i class="bi bi-file-earmark-code text-info me-1"></i> Export JSON
+    </a>
+  </div>
+</div>
+
+<!-- Scans Table -->
+<div class="cyber-card">
+  <div class="table-responsive">
+    <table class="table table-cyber mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width: 70px;">ID</th>
+          <th>Surface</th>
+          <th>Target Input</th>
+          <th>Protected Brand</th>
+          <th>Risk Score</th>
+          <th>Risk Level</th>
+          <th>Summary / Findings</th>
+          <th>Threat Intel</th>
+          <th>Timestamp</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if scans %}
+          {% for scan in scans %}
+            <tr>
+              <td class="font-monospace text-secondary">#{{ scan.id }}</td>
+              <td>
+                {% if scan.scan_type == 'social' %}
+                  <span class="badge badge-type badge-type-social"><i class="bi bi-person-badge me-1"></i> Social</span>
+                {% elif scan.scan_type == 'link' %}
+                  <span class="badge badge-type badge-type-link"><i class="bi bi-link-45deg me-1"></i> Link</span>
+                {% else %}
+                  <span class="badge badge-type badge-type-app"><i class="bi bi-phone me-1"></i> App</span>
+                {% endif %}
+              </td>
+              <td class="fw-semibold text-light" style="max-width: 200px;">
+                <div class="text-truncate code-pill" title="{{ scan.input_title }}">{{ scan.input_title }}</div>
+              </td>
+              <td>
+                <span class="badge bg-dark border border-secondary text-light">{{ scan.target_brand_name }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-bold font-monospace" style="font-size: 0.95rem;">{{ scan.risk_score }}</span>
+                  <div class="progress flex-grow-1" style="height: 6px; width: 45px; background-color: var(--bs-bg-darker);">
+                    <div class="progress-bar {% if scan.risk_score >= 70 %}bg-danger{% elif scan.risk_score >= 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ scan.risk_score }}%;">
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if scan.risk_category in ('HIGH RISK', 'High') %}
+                  <span class="badge badge-risk-high"><i class="bi bi-shield-x me-1"></i> HIGH RISK</span>
+                {% elif scan.risk_category in ('SUSPICIOUS', 'Medium') %}
+                  <span class="badge badge-risk-medium"><i class="bi bi-shield-exclamation me-1"></i> SUSPICIOUS</span>
+                {% elif scan.risk_category in ('LOW RISK', 'Low') %}
+                  <span class="badge badge-risk-low"><i class="bi bi-shield-check me-1"></i> LOW RISK</span>
+                {% else %}
+                  <span class="badge badge-risk-unknown"><i class="bi bi-question-circle me-1"></i> UNKNOWN</span>
+                {% endif %}
+              </td>
+              <td class="text-secondary small" style="max-width: 250px;">
+                <div class="text-truncate" title="{{ scan.summary_reason }}">{{ scan.summary_reason }}</div>
+              </td>
+              <td class="small" style="max-width: 130px;">
+                {% if scan.api_findings and scan.api_findings.get('status') == 'success' %}
+                  <span class="badge {% if scan.api_findings.get('malicious_count', 0) > 0 %}bg-danger{% else %}bg-success{% endif %} bg-opacity-25 text-light border border-secondary" style="font-size: 0.68rem;">
+                    VT: {{ scan.api_findings.get('malicious_count', 0) }} Flagged
+                  </span>
+                {% elif scan.api_findings and scan.api_findings.get('status') == 'not_found' %}
+                  <span class="badge bg-secondary bg-opacity-25 text-info border border-secondary" style="font-size: 0.68rem;">
+                    VT: Unindexed
+                  </span>
+                {% else %}
+                  <span class="text-secondary" style="font-size: 0.72rem;">Heuristics</span>
+                {% endif %}
+              </td>
+              <td class="text-secondary small font-monospace">{{ scan.created_at }}</td>
+              <td class="text-end">
+                <a href="{{ url_for('scan_detail', scan_id=scan.id) }}" class="btn btn-sm btn-cyber-secondary py-1 px-2" title="Inspect Full Report">
+                  <i class="bi bi-eye text-info"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="10" class="text-center py-5 text-secondary">
+              <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+              No scan records match your filter criteria.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

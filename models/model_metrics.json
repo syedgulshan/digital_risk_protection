@@ -1,0 +1,138 @@
+{
+  "model_type": "RandomForestClassifier",
+  "training_timestamp": "2026-10-12 15:45:54",
+  "total_dataset_size": 10000,
+  "train_samples": 8000,
+  "test_samples": 2000,
+  "class_distribution": {
+    "legitimate": 5000,
+    "phishing": 5000
+  },
+  "accuracy": 0.9775,
+  "accuracy_pct": 97.75,
+  "precision": 0.9809,
+  "precision_pct": 98.09,
+  "recall": 0.974,
+  "recall_pct": 97.4,
+  "f1_score": 0.9774,
+  "f1_score_pct": 97.74,
+  "roc_auc": 0.9985,
+  "roc_auc_pct": 99.85,
+  "confusion_matrix": {
+    "true_negatives": 981,
+    "false_positives": 19,
+    "false_negatives": 26,
+    "true_positives": 974
+  },
+  "top_features": [
+    {
+      "feature": "url_length",
+      "importance": 0.1791
+    },
+    {
+      "feature": "hostname_length",
+      "importance": 0.1605
+    },
+    {
+      "feature": "path_length",
+      "importance": 0.1439
+    },
+    {
+      "feature": "count_letters",
+      "importance": 0.0911
+    },
+    {
+      "feature": "count_hyphens",
+      "importance": 0.0703
+    },
+    {
+      "feature": "count_special_chars",
+      "importance": 0.054
+    },
+    {
+      "feature": "count_dots",
+      "importance": 0.04
+    },
+    {
+      "feature": "count_slashes",
+      "importance": 0.0393
+    },
+    {
+      "feature": "entropy",
+      "importance": 0.0333
+    },
+    {
+      "feature": "num_path_tokens",
+      "importance": 0.0322
+    },
+    {
+      "feature": "num_subdomains",
+      "importance": 0.03
+    },
+    {
+      "feature": "sensitive_keyword_count",
+      "importance": 0.0247
+    },
+    {
+      "feature": "query_length",
+      "importance": 0.0244
+    },
+    {
+      "feature": "count_digits",
+      "importance": 0.0158
+    },
+    {
+      "feature": "letter_ratio",
+      "importance": 0.0128
+    },
+    {
+      "feature": "has_https",
+      "importance": 0.0104
+    },
+    {
+      "feature": "count_equals",
+      "importance": 0.009
+    },
+    {
+      "feature": "digit_ratio",
+      "importance": 0.0074
+    },
+    {
+      "feature": "count_ampersands",
+      "importance": 0.0054
+    },
+    {
+      "feature": "count_percents",
+      "importance": 0.0053
+    },
+    {
+      "feature": "count_question_marks",
+      "importance": 0.004
+    },
+    {
+      "feature": "suspicious_encoding",
+      "importance": 0.0038
+    },
+    {
+      "feature": "count_underscores",
+      "importance": 0.0024
+    },
+    {
+      "feature": "count_at",
+      "importance": 0.0007
+    },
+    {
+      "feature": "is_shortened",
+      "importance": 0.0002
+    },
+    {
+      "feature": "has_ip_address",
+      "importance": 0.0002
+    }
+  ],
+  "dataset_sources": [
+    "UNB Canadian Institute for Cybersecurity (CIC-URL-2016)",
+    "PhishTank Open Verified Phishing Archive (online-valid.csv)"
+  ],
+  "license": "Open Access Academic & Defensive Cybersecurity"
+}

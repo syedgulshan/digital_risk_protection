@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — BrandShield AI Digital Risk Protection{% endblock %}
+{% block page_title %}Security Command Center{% endblock %}
+{% block page_subtitle %}Real-time brand impersonation telemetry & multi-surface threat detection{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <!-- KPI Card 1: Total Scans -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card cyber-card glow-cyan kpi-card-entrance stagger-1">
+      <div class="kpi-info">
+        <div class="kpi-label">Total Scans Performed</div>
+        <div class="kpi-value text-info">{{ metrics.total_scans }}</div>
+        <div class="kpi-sub"><i class="bi bi-shield-check text-info me-1"></i> Continuous multi-surface audits</div>
+      </div>
+      <div class="kpi-icon-wrap kpi-icon-cyan">
+        <i class="bi bi-radar"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Card 2: High-Risk Detections -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card cyber-card glow-danger kpi-card-entrance stagger-2">
+      <div class="kpi-info">
+        <div class="kpi-label">High-Risk Impersonations</div>
+        <div class="kpi-value text-danger">{{ metrics.high_risk_scans }}</div>
+        <div class="kpi-sub"><i class="bi bi-exclamation-octagon text-danger me-1"></i> Severe trademark & credential threats</div>
+      </div>
+      <div class="kpi-icon-wrap kpi-icon-danger">
+        <i class="bi bi-shield-slash"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Card 3: Flagged Entities Under Watch -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card cyber-card kpi-card-entrance stagger-3">
+      <div class="kpi-info">
+        <div class="kpi-label">Total Flagged Assets</div>
+        <div class="kpi-value text-warning">{{ metrics.flagged_scans }}</div>
+        <div class="kpi-sub"><i class="bi bi-eye text-warning me-1"></i> Medium + High heuristic flags</div>
+      </div>
+      <div class="kpi-icon-wrap kpi-icon-warning">
+        <i class="bi bi-shield-exclamation"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Card 4: Registered Brands -->
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="kpi-card cyber-card glow-purple kpi-card-entrance stagger-4">
+      <div class="kpi-info">
+        <div class="kpi-label">Registered Brand Assets</div>
+        <div class="kpi-value text-light">{{ metrics.total_brands }}</div>
+        <div class="kpi-sub"><i class="bi bi-buildings text-purple me-1"></i> 5 fictional demo baselines</div>
+      </div>
+      <div class="kpi-icon-wrap kpi-icon-purple">
+        <i class="bi bi-award"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Launch Scan Panels -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="cyber-card h-100 p-3 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="p-2 rounded bg-info bg-opacity-10 text-info"><i class="bi bi-person-badge fs-5"></i></div>
+          <h5 class="m-0 fs-6 fw-bold text-light">Social Profile Audit</h5>
+        </div>
+        <p class="text-secondary small mb-3">Detect fake handles, typosquatting, unauthorized support accounts, and deceptive bios on Twitter, IG, Telegram, and LinkedIn.</p>
+      </div>
+      <a href="{{ url_for('social_checker') }}" class="btn btn-sm btn-cyber-outline-cyan w-100">
+        <i class="bi bi-search me-1"></i> Scan Social Profile
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="cyber-card h-100 p-3 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="p-2 rounded bg-purple bg-opacity-10 text-purple" style="color: #c084fc !important;"><i class="bi bi-link-45deg fs-5"></i></div>
+          <h5 class="m-0 fs-6 fw-bold text-light">Suspicious URL Inspection</h5>
+        </div>
+        <p class="text-secondary small mb-3">Syntactic multi-factor analysis for look-alike domains, credential phishing, raw IP hosts, and disposable TLDs without visiting the link.</p>
+      </div>
+      <a href="{{ url_for('link_checker') }}" class="btn btn-sm btn-cyber-outline-cyan w-100" style="border-color: rgba(168,85,247,0.4); color: #d8b4fe;">
+        <i class="bi bi-shield-lock me-1"></i> Check Suspicious Link
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="cyber-card h-100 p-3 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div class="p-2 rounded bg-warning bg-opacity-10 text-warning"><i class="bi bi-phone fs-5"></i></div>
+          <h5 class="m-0 fs-6 fw-bold text-light">Mobile App Store Listing</h5>
+        </div>
+        <p class="text-secondary small mb-3">Verify publisher identities, inspect cloned app names, third-party APK distributions, and high-risk permission demands.</p>
+      </div>
+      <a href="{{ url_for('app_checker') }}" class="btn btn-sm btn-cyber-outline-cyan w-100" style="border-color: rgba(251,191,36,0.4); color: #fde047;">
+        <i class="bi bi-app-indicator me-1"></i> Inspect Mobile App
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+  <!-- Chart 1: Risk Distribution -->
+  <div class="col-lg-5">
+    <div class="cyber-card h-100">
+      <div class="cyber-card-header">
+        <h5><i class="bi bi-pie-chart text-info"></i> Threat Severity Distribution</h5>
+        <span class="badge bg-dark border border-secondary text-secondary">All Surfaces</span>
+      </div>
+      <div class="cyber-card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 280px;">
+        <div style="position: relative; width: 100%; height: 240px;">
+          <canvas id="riskDistributionChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 2: Threat Surface Breakdown -->
+  <div class="col-lg-7">
+    <div class="cyber-card h-100">
+      <div class="cyber-card-header">
+        <h5><i class="bi bi-bar-chart-line text-purple"></i> Threat Surface Exposure Analysis</h5>
+        <span class="badge bg-dark border border-secondary text-secondary">Categorized</span>
+      </div>
+      <div class="cyber-card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 280px;">
+        <div style="position: relative; width: 100%; height: 240px;">
+          <canvas id="scanTypeChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Threat Intelligence Activity Feed -->
+<div class="cyber-card">
+  <div class="cyber-card-header">
+    <h5><i class="bi bi-activity text-info"></i> Recent Threat Intelligence Activity</h5>
+    <a href="{{ url_for('history') }}" class="btn btn-sm btn-cyber-secondary">
+      <span>View Full Audit Log</span>
+      <i class="bi bi-arrow-right ms-1"></i>
+    </a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-cyber mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Surface</th>
+          <th>Target Input</th>
+          <th>Target Brand</th>
+          <th>Risk Score</th>
+          <th>Severity</th>
+          <th>Primary Indicator / Reason</th>
+          <th>Timestamp</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if metrics.recent_scans %}
+          {% for scan in metrics.recent_scans %}
+            <tr>
+              <td>
+                {% if scan.scan_type == 'social' %}
+                  <span class="badge badge-type badge-type-social"><i class="bi bi-person-badge me-1"></i> Social</span>
+                {% elif scan.scan_type == 'link' %}
+                  <span class="badge badge-type badge-type-link"><i class="bi bi-link-45deg me-1"></i> Link</span>
+                {% else %}
+                  <span class="badge badge-type badge-type-app"><i class="bi bi-phone me-1"></i> App</span>
+                {% endif %}
+              </td>
+              <td class="fw-semibold text-light" style="max-width: 200px;">
+                <div class="text-truncate code-pill" title="{{ scan.input_title }}">{{ scan.input_title }}</div>
+              </td>
+              <td>
+                <span class="badge bg-dark border border-secondary text-light">{{ scan.target_brand_name }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-bold font-monospace" style="font-size: 0.95rem;">{{ scan.risk_score }}</span>
+                  <div class="progress flex-grow-1" style="height: 6px; width: 50px; background-color: var(--bs-bg-darker);">
+                    <div class="progress-bar {% if scan.risk_score >= 70 %}bg-danger{% elif scan.risk_score >= 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ scan.risk_score }}%;">
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                {% if scan.risk_category in ('HIGH RISK', 'High') %}
+                  <span class="badge badge-risk-high"><i class="bi bi-shield-x me-1"></i> HIGH RISK</span>
+                {% elif scan.risk_category in ('SUSPICIOUS', 'Medium') %}
+                  <span class="badge badge-risk-medium"><i class="bi bi-shield-exclamation me-1"></i> SUSPICIOUS</span>
+                {% elif scan.risk_category in ('LOW RISK', 'Low') %}
+                  <span class="badge badge-risk-low"><i class="bi bi-shield-check me-1"></i> LOW RISK</span>
+                {% else %}
+                  <span class="badge badge-risk-unknown"><i class="bi bi-question-circle me-1"></i> UNKNOWN / INSUFFICIENT</span>
+                {% endif %}
+              </td>
+              <td class="text-secondary small" style="max-width: 280px;">
+                <div class="text-truncate" title="{{ scan.summary_reason }}">{{ scan.summary_reason }}</div>
+              </td>
+              <td class="text-secondary small font-monospace">{{ scan.created_at }}</td>
+              <td class="text-end">
+                <a href="{{ url_for('scan_detail', scan_id=scan.id) }}" class="btn btn-sm btn-cyber-secondary py-1 px-2" title="Inspect Full Report">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" class="text-center py-5">
+              <div class="guardian-empty-state d-flex flex-column align-items-center justify-content-center">
+                <div class="guardian-empty-avatar mb-3">
+                  <svg viewBox="0 0 100 100" width="68" height="68" aria-hidden="true">
+                    <circle cx="50" cy="50" r="44" fill="#0c1222" stroke="#38bdf8" stroke-width="2"/>
+                    <rect x="25" y="32" width="50" height="36" rx="14" fill="#030712" stroke="#00f2fe" stroke-width="1.5"/>
+                    <circle cx="38" cy="50" r="5" fill="#00f2fe"/>
+                    <circle cx="62" cy="50" r="5" fill="#00f2fe"/>
+                    <circle cx="50" cy="78" r="6" fill="rgba(56,189,248,0.3)" stroke="#38bdf8" stroke-width="1.5"/>
+                  </svg>
+                </div>
+                <h6 class="text-light fw-bold mb-1">Perimeter Clear — No Scans Recorded</h6>
+                <p class="text-secondary small mb-3" style="max-width: 380px;">
+                  Guardian AI has not logged any external threats yet. Use the scan engines above to audit social profiles, suspicious URLs, or mobile APKs.
+                </p>
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('link_checker') }}" class="btn btn-sm btn-cyber-primary">
+                    <i class="bi bi-link-45deg me-1"></i> Scan Suspicious URL
+                  </a>
+                  <a href="{{ url_for('social_checker') }}" class="btn btn-sm btn-cyber-secondary">
+                    <i class="bi bi-person-badge me-1"></i> Check Social Profile
+                  </a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
