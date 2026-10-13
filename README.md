@@ -6,8 +6,8 @@
 [![Framework](https://img.shields.io/badge/Backend-Flask%203.0-lightgrey.svg)](https://flask.palletsprojects.com/)
 [![Threat Intel](https://img.shields.io/badge/Threat%20Intel-VirusTotal%20API%20v3-blueviolet.svg)](https://docs.virustotal.com/reference/overview)
 [![Fuzzy Engine](https://img.shields.io/badge/Matching-RapidFuzz%203.14-orange.svg)](https://github.com/maxbachmann/RapidFuzz)
-[![Database](https://img.shields.io/badge/Database-SQLite%20(Parameterized)-green.svg)](https://www.sqlite.org/)
 [![UI Style](https://img.shields.io/badge/Theme-Cyber%20Navy%20Dark-indigo.svg)](#design-system)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/popurivinuthna5-tech/brandshield-digital-risk-protection)
 
 ---
 
