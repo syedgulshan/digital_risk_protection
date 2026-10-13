@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Scan Audit Report #{{ scan.id }} — BrandShield AI{% endblock %}
+{% block page_title %}Security Audit Report #{{ scan.id }}{% endblock %}
+{% block page_subtitle %}Comprehensive forensic breakdown, heuristic attribution trail, and VirusTotal threat telemetry{% endblock %}
+
+{% block content %}
+<div class="mb-3 d-flex align-items-center justify-content-between">
+  <a href="{{ url_for('history') }}" class="btn btn-sm btn-cyber-secondary">
+    <i class="bi bi-arrow-left me-1"></i> Back to Audit Log
+  </a>
+  <button onclick="window.print()" class="btn btn-sm btn-cyber-secondary">
+    <i class="bi bi-printer me-1"></i> Print / Save PDF
+  </button>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Summary & Score -->
+  <div class="col-12 col-lg-5">
+    <div class="cyber-card mb-4 {% if scan.risk_category in ('HIGH RISK', 'High') %}glow-danger{% elif scan.risk_category in ('SUSPICIOUS', 'Medium') %}border-warning{% elif scan.risk_category in ('LOW RISK', 'Low') %}glow-cyan{% else %}border-secondary{% endif %}">
+      <div class="cyber-card-header">
+        <h5><i class="bi bi-shield-shaded text-info"></i> Risk Evaluation Summary</h5>
+        {% if scan.risk_category in ('HIGH RISK', 'High') %}
+          <span class="badge badge-risk-high">HIGH RISK</span>
+        {% elif scan.risk_category in ('SUSPICIOUS', 'Medium') %}
+          <span class="badge badge-risk-medium">SUSPICIOUS</span>
+        {% elif scan.risk_category in ('LOW RISK', 'Low') %}
+          <span class="badge badge-risk-low">LOW RISK</span>
+        {% else %}
+          <span class="badge badge-risk-unknown">UNKNOWN / INSUFFICIENT</span>
+        {% endif %}
+      </div>
+      <div class="cyber-card-body text-center p-4">
+        <!-- Circular Score Display -->
+        <div class="score-circle-wrap {% if scan.risk_category in ('HIGH RISK', 'High') %}score-high{% elif scan.risk_category in ('SUSPICIOUS', 'Medium') %}score-medium{% elif scan.risk_category in ('LOW RISK', 'Low') %}score-low{% else %}score-unknown{% endif %} mb-3">
+          <div class="score-num">{{ scan.risk_score }}</div>
+          <div class="score-max">Risk Index / 100</div>
+        </div>
+
+        <h5 class="text-light fw-bold mb-1">{{ scan.target_brand_name }} Assessment</h5>
+        <div class="text-secondary small font-monospace mb-3">Audit Timestamp: {{ scan.created_at }}</div>
+        <p class="text-secondary small px-2">{{ scan.summary_reason }}</p>
+
+        <!-- Key Metadata List -->
+        <div class="text-start mt-4 pt-3 border-top border-secondary border-opacity-25 small">
+          <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+            <span class="text-secondary">Scan ID:</span>
+            <span class="font-monospace text-light">#{{ scan.id }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+            <span class="text-secondary">Threat Surface:</span>
+            <span class="text-uppercase fw-bold text-info">{{ scan.scan_type }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom border-secondary border-opacity-25">
+            <span class="text-secondary">Target Entity:</span>
+            <span class="text-light fw-semibold text-truncate" style="max-width: 200px;">{{ scan.input_title }}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1">
+            <span class="text-secondary">Heuristic Methodology:</span>
+            <span class="text-secondary">RapidFuzz + VirusTotal v3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Submission Parameters -->
+    <div class="cyber-card">
+      <div class="cyber-card-header">
+        <h5><i class="bi bi-code-square text-purple"></i> Captured Input Parameters</h5>
+      </div>
+      <div class="cyber-card-body p-3 font-monospace small">
+        {% for key, val in scan.input_details.items() %}
+          <div class="mb-2 pb-2 border-bottom border-secondary border-opacity-25">
+            <span class="text-secondary d-block text-uppercase" style="font-size: 0.7rem;">{{ key }}:</span>
+            <span class="text-light text-break">{{ val }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Indicators and Recommendations -->
+  <div class="col-12 col-lg-7">
+    <!-- Local Heuristic Indicators Breakdown -->
+    <div class="cyber-card mb-4">
+      <div class="cyber-card-header">
+        <h5><i class="bi bi-list-check text-info"></i> Local Heuristic Detection Findings</h5>
+        <span class="badge bg-dark border border-secondary text-secondary">{{ scan.indicators|length }} Indicators</span>
+      </div>
+      <div class="cyber-card-body">
+        {% if scan.indicators %}
+          {% for ind in scan.indicators %}
+            <div class="indicator-item severity-{{ ind.severity }}">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="indicator-name">{{ ind.name }}</span>
+                <span class="badge {% if ind.severity == 'High' %}bg-danger{% elif ind.severity == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %} bg-opacity-25 border border-{{ ind.severity|lower }} border-opacity-25" style="font-size: 0.72rem;">
+                  +{{ ind.points }} pts • {{ ind.severity }} Severity
+                </span>
+              </div>
+              <div class="indicator-desc">{{ ind.desc }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-secondary small m-0">No risk indicators triggered during local evaluation.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- External Threat Intelligence (VirusTotal API v3) -->
+    {% if scan.api_findings %}
+      <div class="cyber-card mb-4">
+        <div class="cyber-card-header">
+          <h5><i class="bi bi-shield-shaded text-purple"></i> External Threat Intelligence (VirusTotal API v3)</h5>
+          <span class="badge bg-dark border border-secondary text-secondary font-monospace">{{ scan.api_findings.get('status', 'N/A') }}</span>
+        </div>
+        <div class="cyber-card-body">
+          <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 mb-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-25">
+              <div>
+                <span class="text-secondary small">Reputation Intelligence Summary:</span>
+                <div class="text-light fw-semibold small">{{ scan.api_findings.get('summary', 'No external records available.') }}</div>
+              </div>
+              {% if scan.api_findings.get('total_vendors') %}
+                <div class="text-sm-end font-monospace small">
+                  <span class="badge {% if scan.api_findings.get('malicious_count', 0) > 0 %}bg-danger{% else %}bg-success{% endif %} bg-opacity-25 text-light border border-secondary">
+                    {{ scan.api_findings.get('malicious_count', 0) }} / {{ scan.api_findings.get('total_vendors', 0) }} Vendors Flagged
+                  </span>
+                </div>
+              {% endif %}
+            </div>
+
+            {% if scan.api_findings.get('details') %}
+              <div class="text-secondary small mb-2">{{ scan.api_findings.get('details') }}</div>
+            {% endif %}
+
+            {% if scan.api_findings.get('social_notice') %}
+              <div class="alert alert-dark border border-info border-opacity-25 mb-0 py-2 px-3 small text-info mt-2">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <strong>Social Platform Clarification:</strong> {{ scan.api_findings.get('social_notice') }}
+              </div>
+            {% endif %}
+
+            {% if scan.api_findings.get('binary_verification_note') %}
+              <div class="alert alert-dark border border-warning border-opacity-25 mb-0 py-2 px-3 small text-warning mt-2">
+                <i class="bi bi-shield-exclamation me-1"></i>
+                <strong>Binary Verification Limitation:</strong> {{ scan.api_findings.get('binary_verification_note') }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Social Profile Machine Learning Intelligence (RandomForest) -->
+    {% if scan.profile_ml_findings and scan.profile_ml_findings.get('available') %}
+      <div class="cyber-card mb-4">
+        <div class="cyber-card-header">
+          <h5><i class="bi bi-person-bounding-box text-info"></i> Machine Learning Social Profile Intelligence</h5>
+          {% if scan.profile_ml_findings.get('is_spam_suspect') %}
+            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 font-monospace">Spam / Impersonator Flagged</span>
+          {% else %}
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 font-monospace">Authentic / Benign Structure</span>
+          {% endif %}
+        </div>
+        <div class="cyber-card-body">
+          <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 mb-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+              <div>
+                <span class="text-secondary small">Profile Prediction:</span>
+                <div class="fw-bold fs-6 {% if scan.profile_ml_findings.get('is_spam_suspect') %}text-danger{% else %}text-success{% endif %}">
+                  {{ scan.profile_ml_findings.get('prediction', 'BENIGN') }}
+                </div>
+              </div>
+              <div class="text-sm-end">
+                <span class="text-secondary small">Model Confidence:</span>
+                <div class="font-monospace fw-bold text-light">{{ scan.profile_ml_findings.get('confidence_pct', 0) }}% ({{ scan.profile_ml_findings.get('confidence_level', 'N/A') }})</div>
+              </div>
+            </div>
+
+            <!-- Spam Probability Gauge -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between text-secondary small mb-1">
+                <span>Spam / Impersonator Propensity:</span>
+                <span class="font-monospace fw-bold {% if scan.profile_ml_findings.get('spam_probability_pct', 0) >= 50 %}text-danger{% else %}text-info{% endif %}">
+                  {{ scan.profile_ml_findings.get('spam_probability_pct', 0) }}%
+                </span>
+              </div>
+              <div class="progress" style="height: 6px; background: rgba(255,255,255,0.06);">
+                <div class="progress-bar {% if scan.profile_ml_findings.get('spam_probability_pct', 0) >= 75 %}bg-danger{% elif scan.profile_ml_findings.get('spam_probability_pct', 0) >= 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                     style="width: {{ scan.profile_ml_findings.get('spam_probability_pct', 0) }}%;"></div>
+              </div>
+            </div>
+
+            <!-- Contributing Features -->
+            {% if scan.profile_ml_findings.get('contributing_features') %}
+              <div class="mb-3">
+                <div class="text-secondary small fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">Active Profile Characteristic Signals:</div>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for feat in scan.profile_ml_findings.get('contributing_features') %}
+                    <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 py-1 px-2" style="font-size: 0.72rem;">
+                      <i class="bi bi-tag me-1 text-info"></i> {{ feat.name }} ({{ feat.value }})
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Benchmark Metadata -->
+            <div class="p-2 rounded bg-black bg-opacity-40 border border-secondary border-opacity-25 small text-secondary mb-2" style="font-size: 0.72rem;">
+              <i class="bi bi-info-circle text-info me-1"></i>
+              <strong>Benchmark:</strong> Cresci et al. (2017) Twitter Bot Dataset • 98.32% Accuracy • 96.92% Precision • 98.85% ROC-AUC
+            </div>
+
+            <!-- Limitation Disclaimer -->
+            <div class="alert alert-dark border border-secondary border-opacity-25 mb-0 py-2 px-3 small text-secondary">
+              <i class="bi bi-shield-exclamation me-1 text-warning"></i>
+              <strong>Fairness & Limitation Safeguard:</strong> {{ scan.profile_ml_findings.get('limitation_notice') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Machine Learning Phishing Intelligence (RandomForest) -->
+    {% if scan.ml_findings and scan.ml_findings.get('available') %}
+      <div class="cyber-card mb-4">
+        <div class="cyber-card-header">
+          <h5><i class="bi bi-cpu text-warning"></i> Machine Learning Phishing Intelligence (RandomForest)</h5>
+          {% if scan.ml_findings.get('is_phishing') %}
+            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 font-monospace">Phishing Flagged</span>
+          {% else %}
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 font-monospace">Benign Structure</span>
+          {% endif %}
+        </div>
+        <div class="cyber-card-body">
+          <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 mb-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+              <div>
+                <span class="text-secondary small">Model Prediction:</span>
+                <div class="fw-bold fs-6 {% if scan.ml_findings.get('is_phishing') %}text-danger{% else %}text-success{% endif %}">
+                  {{ scan.ml_findings.get('prediction', 'BENIGN') }}
+                </div>
+              </div>
+              <div class="text-sm-end">
+                <span class="text-secondary small">Model Confidence:</span>
+                <div class="font-monospace fw-bold text-light">{{ scan.ml_findings.get('confidence_pct', 0) }}%</div>
+              </div>
+            </div>
+
+            <!-- Phishing Probability Gauge -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between text-secondary small mb-1">
+                <span>Phishing Probability:</span>
+                <span class="font-monospace fw-bold {% if scan.ml_findings.get('phishing_probability_pct', 0) >= 50 %}text-danger{% else %}text-info{% endif %}">
+                  {{ scan.ml_findings.get('phishing_probability_pct', 0) }}%
+                </span>
+              </div>
+              <div class="progress" style="height: 6px; background: rgba(255,255,255,0.06);">
+                <div class="progress-bar {% if scan.ml_findings.get('phishing_probability_pct', 0) >= 75 %}bg-danger{% elif scan.ml_findings.get('phishing_probability_pct', 0) >= 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                     style="width: {{ scan.ml_findings.get('phishing_probability_pct', 0) }}%;"></div>
+              </div>
+            </div>
+
+            <!-- Contributing Features -->
+            {% if scan.ml_findings.get('contributing_features') %}
+              <div class="mb-3">
+                <div class="text-secondary small fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">Key Contributing Lexical Signals:</div>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for feat in scan.ml_findings.get('contributing_features') %}
+                    <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 py-1 px-2" style="font-size: 0.72rem;">
+                      <i class="bi bi-tag me-1 text-warning"></i> {{ feat.name }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Social Notice if present -->
+            {% if scan.ml_findings.get('social_notice') %}
+              <div class="alert alert-dark border border-warning border-opacity-25 mb-2 py-2 px-3 small text-warning">
+                <i class="bi bi-shield-exclamation me-1"></i>
+                <strong>Rule 8 Limitation:</strong> {{ scan.ml_findings.get('social_notice') }}
+              </div>
+            {% endif %}
+
+            <!-- Warning Disclaimer -->
+            <div class="alert alert-dark border border-secondary border-opacity-25 mb-0 py-2 px-3 small text-secondary">
+              <i class="bi bi-info-circle me-1"></i>
+              <strong>Notice:</strong> Machine learning predictions represent statistical likelihood based on URL lexical patterns and must be evaluated alongside VirusTotal threat intelligence and Brand Registry verification.
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Mobile App Machine Learning Intelligence (RandomForest - Drebin NDSS 2014) -->
+    {% if scan.app_ml_findings and scan.app_ml_findings.get('available') %}
+      <div class="cyber-card mb-4">
+        <div class="cyber-card-header">
+          <h5><i class="bi bi-phone text-primary"></i> Machine Learning Mobile App Risk Intelligence</h5>
+          {% if scan.app_ml_findings.get('is_malware_suspect') %}
+            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 font-monospace">Malware / High-Risk Flagged</span>
+          {% else %}
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 font-monospace">Benign / Low-Risk Structure</span>
+          {% endif %}
+        </div>
+        <div class="cyber-card-body">
+          <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 mb-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+              <div>
+                <span class="text-secondary small">Model Prediction:</span>
+                <div class="fw-bold fs-6 {% if scan.app_ml_findings.get('is_malware_suspect') %}text-danger{% else %}text-success{% endif %}">
+                  {{ scan.app_ml_findings.get('prediction', 'BENIGN') }}
+                </div>
+              </div>
+              <div class="text-sm-end">
+                <span class="text-secondary small">Model Confidence:</span>
+                <div class="font-monospace fw-bold text-light">{{ scan.app_ml_findings.get('confidence_pct', 0) }}% ({{ scan.app_ml_findings.get('confidence_level', 'N/A') }})</div>
+              </div>
+            </div>
+
+            <!-- Malware Probability Gauge -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between text-secondary small mb-1">
+                <span>Malware Propensity Score:</span>
+                <span class="font-monospace fw-bold {% if scan.app_ml_findings.get('malware_probability_pct', 0) >= 50 %}text-danger{% else %}text-primary{% endif %}">
+                  {{ scan.app_ml_findings.get('malware_probability_pct', 0) }}%
+                </span>
+              </div>
+              <div class="progress" style="height: 6px; background: rgba(255,255,255,0.06);">
+                <div class="progress-bar {% if scan.app_ml_findings.get('malware_probability_pct', 0) >= 75 %}bg-danger{% elif scan.app_ml_findings.get('malware_probability_pct', 0) >= 40 %}bg-warning{% else %}bg-success{% endif %}" 
+                     style="width: {{ scan.app_ml_findings.get('malware_probability_pct', 0) }}%;"></div>
+              </div>
+            </div>
+
+            <!-- Contributing Features -->
+            {% if scan.app_ml_findings.get('contributing_features') %}
+              <div class="mb-3">
+                <div class="text-secondary small fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">Active Manifest Characteristic Signals:</div>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for feat in scan.app_ml_findings.get('contributing_features') %}
+                    <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50 py-1 px-2" style="font-size: 0.72rem;">
+                      <i class="bi bi-tag me-1 text-primary"></i> {{ feat.name }} ({{ feat.value }})
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Sensitive Permissions -->
+            {% if scan.app_ml_findings.get('dangerous_permissions') %}
+              <div class="mb-3">
+                <div class="text-secondary small fw-bold mb-1" style="font-size: 0.72rem; text-transform: uppercase;">Declared Dangerous Permissions:</div>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for perm in scan.app_ml_findings.get('dangerous_permissions') %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 font-monospace py-1 px-2" style="font-size: 0.7rem;">
+                      <i class="bi bi-shield-slash me-1"></i> {{ perm }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Benchmark Metadata -->
+            <div class="p-2 rounded bg-black bg-opacity-40 border border-secondary border-opacity-25 small text-secondary mb-2" style="font-size: 0.72rem;">
+              <i class="bi bi-info-circle text-primary me-1"></i>
+              <strong>Benchmark:</strong> Drebin NDSS 2014 Android Dataset • 95.73% Accuracy • 88.95% Precision • 98.80% ROC-AUC
+            </div>
+
+            <!-- Limitation Disclaimer -->
+            <div class="alert alert-dark border border-secondary border-opacity-25 mb-0 py-2 px-3 small text-secondary">
+              <i class="bi bi-shield-exclamation me-1 text-warning"></i>
+              <strong>Fairness & Limitation Safeguard:</strong> {{ scan.app_ml_findings.get('limitation_notice') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Actionable Recommendations -->
+    <div class="cyber-card">
+      <div class="cyber-card-header">
+        <h5><i class="bi bi-shield-exclamation text-warning"></i> Remediation & Verification Protocol</h5>
+      </div>
+      <div class="cyber-card-body">
+        <p class="text-secondary small mb-3">
+          Recommended triage and enforcement steps generated based on detected threat characteristics:
+        </p>
+
+        {% if scan.recommendations %}
+          {% for rec in scan.recommendations %}
+            <div class="rec-item">
+              <i class="bi bi-check-circle text-info"></i>
+              <div>{{ rec }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="rec-item">
+            <i class="bi bi-check-circle text-success"></i>
+            <div>Target asset conforms to registered baseline. Continue routine passive monitoring.</div>
+          </div>
+        {% endif %}
+
+        <div class="alert alert-secondary border-0 bg-dark mt-4 mb-0 small text-secondary">
+          <i class="bi bi-info-circle me-1 text-info"></i>
+          <strong>Legal Disclaimer:</strong> Risk scores are algorithmic heuristic estimations based on lexical patterns, RapidFuzz string proximity, and static metadata matching. They do not constitute definitive legal or forensic proof of criminal malice.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

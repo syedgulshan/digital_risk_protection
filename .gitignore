@@ -1,0 +1,38 @@
+# Environment variables
+.env
+.env*.local
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Database (optional if sharing repo without local scan data)
+*.sqlite3
+*.db
+instance/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Executables & Binaries
+*.exe
+cloudflared.exe
+
+# Node & Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vercel/
+*.log
+
